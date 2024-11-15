@@ -1,0 +1,201 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{ product.title }}</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                background-color: #f4f4f9;
+            }
+
+            h1 {
+                text-align: center;
+                color: #333;
+                font-size: 2.5rem;
+                margin-bottom: 20px;
+            }
+
+            .product-image {
+                display: block;
+                margin: 0 auto;
+                max-width: 300px;
+                border-radius: 10px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            }
+
+            .product-description {
+                text-align: center;
+                font-size: 1.2rem;
+                color: #555;
+                margin: 20px 0;
+            }
+
+            .watchlist-form, .comment-form {
+                text-align: center;
+                margin: 20px 0;
+            }
+
+            .comment-list {
+                max-width: 600px;
+                margin: 20px auto;
+                background-color: #fff;
+                padding: 15px;
+                border-radius: 10px;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            }
+
+            .comment-item {
+                border-bottom: 1px solid #ddd;
+                padding: 10px 0;
+            }
+
+            .comment-item:last-child {
+                border-bottom: none;
+            }
+
+            .comment-item h3 {
+                margin: 0;
+                color: #333;
+                font-size: 1rem;
+            }
+
+            .comment-item p {
+                font-size: 1.1rem;
+                color: #666;
+            }
+
+            .comment-item small {
+                font-size: 0.8rem;
+                color: #999;
+            }
+
+            input[type="submit"] {
+                padding: 10px 20px;
+                font-size: 1rem;
+                background-color: #007bff;
+                border: none;
+                color: #fff;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+            }
+
+            input[type="submit"]:hover {
+                background-color: #0056b3;
+            }
+
+            form {
+                display: inline-block;
+            }
+
+            .bids{
+                margin-top: 20px;
+                text-align: center;
+
+            }
+            .bids1{
+                margin-top: 20px;
+                text-align: center;
+
+            }
+
+            .add-comment {
+                margin-top: 20px;
+                text-align: center;
+            }
+
+            .form-control {
+                width: 100%;
+                padding: 10px;
+                margin: 10px 0;
+                font-size: 1rem;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+            }
+
+        </style>
+    </head>
+    <body>
+        <h1>{{ product.title }}</h1>
+        <h1>product by: {{ product.owner }}</h1>
+        
+
+        <img src="{{ product.image_url }}" alt="Product Image" class="product-image">
+        <p class="product-description">{{ product.description }}</p>
+
+        <div class="watchlist-form">
+            {% if in_watchlist %}
+                <form action="{% url 'remove_watchlist' product.id %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" value="{{ product.id }}" name="product_to_remove">
+                    <input type="submit" value="Remove from watchlist">
+                </form>
+            {% else %}
+                <form action="{% url 'watchlist' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" value="{{ product.id }}" name="product">
+                    <input type="submit" value="Add to watchlist">
+                </form>
+            {% endif %}
+        </div>
+
+        <div class="comment-list">
+            <h2>Comments:</h2>
+            {% for comment in comments %}
+                <div class="comment-item">
+                    <p>{{ comment.comment }}</p>
+                    <h3>By: {{ comment.person }}</h3>
+                    <small>{{ comment.timestamp }}</small>
+                </div>
+            {% endfor %}
+        </div>
+        {% if messages %}
+        <div class="bids1">
+            {% for message in messages %}
+                <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if product.is_active %}
+            <div class="bids">
+                <h2>current_price: Rs.{{ product.starting_bid }}</h2>
+                <form action="{% url 'update_bid' %}" method="post">
+                    {% csrf_token %}
+                    {{ form_b.as_p }}
+                    <input type="hidden" value="{{ product.id }}" name="product_bidded">
+                    <input type="submit" value="Bid">
+
+                </form>
+                {% if a %}
+                    <form action="{% url 'stop_bid' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" value="{{ product.id }}" name="product_stop">
+                        <input type="submit" value="Stop bidding">
+                    </form>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="bids">
+                <h2>Bidding is closed</h2>
+                <h2>Winner is {{ product.winner }}</h2>
+            </div>
+        {% endif %}
+
+
+        <div class="add-comment">
+            <form action="{% url 'add_comment' %}" method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <input type="hidden" value="{{ product.id }}" name="product_commented">
+                <input type="submit" value="Add Comment">
+            </form>
+        </div>
+    </body>
+</html>
